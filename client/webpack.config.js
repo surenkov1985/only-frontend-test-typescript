@@ -111,7 +111,7 @@ const dev = {
 			directory: path.join(__dirname, "src"),
 		},
 		open: true,
-		port: 8081,
+		port: 3000,
 		host: "local-ip",
 		compress: false,
 		hot: true,

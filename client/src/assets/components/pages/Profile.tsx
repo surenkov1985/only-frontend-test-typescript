@@ -25,6 +25,7 @@ export const Profile:React.FC = () => {
 
 		dispatch(setChecked(false))
 		localStorage.removeItem("jwt_token")
+		localStorage.removeItem("login")
 	}
 
 	return (

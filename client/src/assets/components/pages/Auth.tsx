@@ -8,6 +8,8 @@ import { CheckInput, CheckLabel, FalseCheck, FalseCheckBack, LabelText, Submit, 
 import { FormError } from "../FormError";
 import { setChecked, setName } from "../../stores/actions";
 import { useEffect } from "react";
+import { json, response } from "express";
+import axios from "axios"
 
 type login = string;
 type password = string;
@@ -41,6 +43,11 @@ export const Auth:React.FC = () => {
 
     const dispatch = useDispatch();
 
+    useEffect(() => {
+        dispatch(setChecked(localStorage.hasOwnProperty("jwt_token")));
+        dispatch(setName(localStorage.getItem("login")));
+    }, [])
+
     // Пользователя test.user@example.com не существует
     const loginInput:InputPropsTypes = {
         text: "Логин",
@@ -62,36 +69,56 @@ export const Auth:React.FC = () => {
         pattern: /\w{5,}/
     };
 
+    async function submitHandler(data) {
+     
+        try {
+            await axios.post("/api/auth/register", {...data},
+                { headers: {
+                        "Content-Type": "application/json",
+                        "mode": "no-cors",
+                        
+                    }
+                }
+            
+            )
+            .then(response => console.log(response))
+        } catch (error) {
+            console.log(error);
+        }
+        
+    }
+
     const onSubmit: SubmitHandler<User> = (data) => {
 
-        fetch("users.json")
-            .then(res => res.json())
-            .then(json => {
+        submitHandler(data)
 
-                const user = json;
-                setValid(false)
-                setTimeout(():void=>{
+        // fetch("users.json")
+        //     .then(res => res.json())
+        //     .then(json => {
+        //         setValid(true)
+        //         setTimeout(():void=>{
 
-                    if (user.login === data.login && user.password === data.password ) {
+        //             if (json.login === data.login && json.password === data.password ) {
 
-                        dispatch(setName(data.login));
-                        dispatch(setChecked(true));
-                        setError("")
-                        localStorage.setItem("jwt_token", user.jwt_token)   
-                        reset()
+        //                 dispatch(setName(data.login));
+        //                 dispatch(setChecked(true));
+        //                 setError("")
+        //                 localStorage.setItem("jwt_token", json.jwt_token) 
+        //                 localStorage.setItem("login", json.login)  
+        //                 reset()
                         
-                    } else if (user.login !== data.login){
+        //             } else if (json.login !== data.login){
 
-                        setError(`Пользователя ${data.login} не существует`)
-                    }else if (user.password !== data.password){
+        //                 setError(`Пользователя ${data.login} не существует`)
+        //             }else if (json.password !== data.password){
 
-                        setError(`Неверный логин или пароль`)
-                    }
-                    setValid(true)
-                }, 500)
+        //                 setError(`Неверный логин или пароль`)
+        //             }
+        //             setValid(true)
+        //         }, 500)
                 
-            })
-            .catch(err => console.log(err));
+        //     })
+        //     .catch(err => console.log(err));
     }
 
     return (
@@ -102,7 +129,7 @@ export const Auth:React.FC = () => {
                     <InputEl
                         type={loginInput.type}
                         placeholder={loginInput.placeholder}
-                        autofocus="true"
+                        autoFocus={true}
                         {...register("login", {required: "Обязательное поле", pattern: {value: /^((([0-9A-Za-z]{1}[-0-9A-z\.]{1,}[0-9A-Za-z]{1})|([0-9А-Яа-я]{1}[-0-9А-я\.]{1,}[0-9А-Яа-я]{1}))@([-A-Za-z]{1,}\.){1,2}[-A-Za-z]{2,})$/u, message: "Логин должен быть в формате test@test.io"}})}
                     />
                     <InputError>
